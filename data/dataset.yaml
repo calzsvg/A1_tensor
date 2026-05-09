@@ -1,0 +1,7 @@
+path: data
+train: train/images
+val: val/images
+test: test/images
+
+nc: 3
+names: ['closed_eye', 'open_eye', 'yawning']
