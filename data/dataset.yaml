@@ -1,7 +1,7 @@
-path: data
-train: train/images
-val: val/images
-test: test/images
+path: /content/merged_dataset
+train: /content/merged_dataset/train/images
+val: /content/merged_dataset/val/images
+test: /content/merged_dataset/test/images
 
 nc: 3
 names: ['closed_eye', 'open_eye', 'yawning']
