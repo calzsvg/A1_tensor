@@ -1,4 +1,5 @@
 from ultralytics import YOLO
+import numpy as np
 import os
 import cv2
 
@@ -24,9 +25,25 @@ if __name__ == "__main__":
     main()
     '''
     
-    
+def preprocess_frame_opencv(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    mean_brightness = np.mean(gray)
 
-#<실시간 영상>
+    if mean_brightness < 50:
+        gamma = 2.0
+    elif mean_brightness < 90:
+        gamma = 1.5
+    else:
+        gamma = 1.0
+    if gamma == 1.0:
+        return frame
+    invGamma = 1.0 / gamma
+
+    table = np.array([((i / 255.0) ** invGamma) * 255 for i in np.arange(0, 256)]).astype("uint8")
+    processed_frame = cv2.LUT(frame, table)
+    
+    return processed_frame
+
 
 
 def main():
@@ -39,7 +56,9 @@ def main():
         if not ret:
             break
         
-        results = model.predict(frame, conf=0.25, verbose=False)
+        processed_frame = preprocess_frame_opencv(frame)
+
+        results = model.predict(processed_frame, conf=0.25, verbose=False)
         annotated = results[0].plot()
         
         cv2.imshow("Detection", annotated)
