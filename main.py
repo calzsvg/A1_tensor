@@ -3,6 +3,8 @@ import numpy as np
 import os
 import cv2
 
+from src.alert_system import AlertSystem
+
 '''
 def main():
     model_path = "model/eyesyawn.pt"
@@ -50,7 +52,10 @@ def main():
     model = YOLO("model/eyesyawn.pt")
     
     cap = cv2.VideoCapture(0)
-    
+
+    alert_system = AlertSystem(alarm=30)
+    DROWSY_CLASS_ID = 0
+
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -60,7 +65,12 @@ def main():
 
         results = model.predict(processed_frame, conf=0.25, verbose=False)
         annotated = results[0].plot()
-        
+
+        detected_classes = results[0].boxes.cls.cpu().numpy()
+        sleep_OX = DROWSY_CLASS_ID in detected_classes
+
+        annotated = alert_system.process_frame(annotated, sleep_OX)
+
         cv2.imshow("Detection", annotated)
         
         if cv2.waitKey(1) & 0xFF == ord('q'):  # q로 종료!!
