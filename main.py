@@ -22,7 +22,7 @@ def preprocess_frame_opencv(frame):
 
 def main():
     drowsy_model = YOLO("model/eyesyawn.pt")
-    distract_model = YOLO("model/distract.pt")
+    distract_model = YOLO("runs/detect/distract_v1/weights/best.pt")
     
     cap = cv2.VideoCapture(0)
     alert_system = AlertSystem(alarm=30)
@@ -61,7 +61,7 @@ def main():
                 xyxy = box.xyxy[0].cpu().numpy().astype(int)
                 
                 if conf >= 0.80:
-                    if cls_id in [0, 4]:
+                    if cls_id in [0, 1 ,2 ,3]:
                         is_distracted = True
                     
                     label = f"{distract_model.names[cls_id]} {conf:.2f}"
