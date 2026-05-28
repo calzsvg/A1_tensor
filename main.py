@@ -22,7 +22,7 @@ def preprocess_frame_opencv(frame):
 
 def main():
     drowsy_model = YOLO("model/eyesyawn.pt")
-    distract_model = YOLO("model/distract.pt")
+    distract_model = YOLO("model/best.pt")
     
     cap = cv2.VideoCapture(0)
     alert_system = AlertSystem(alarm=30)
@@ -36,7 +36,7 @@ def main():
         processed_frame = preprocess_frame_opencv(frame)
 
         drowsy_results = drowsy_model.predict(processed_frame, conf=0.25, verbose=False)
-        distract_results = distract_model.predict(processed_frame, conf=0.25, verbose=False)
+        distract_results = distract_model.predict(processed_frame, conf=0.25, classes=[2, 3, 4], verbose=False)
 
         is_drowsy = False
         is_distracted = False
@@ -60,15 +60,14 @@ def main():
                 conf = float(box.conf[0]) 
                 xyxy = box.xyxy[0].cpu().numpy().astype(int)
                 
-                if conf >= 0.80:
-                    if cls_id in [0, 4]:
+                if conf >= 0.50:
+                    if cls_id in [2, 3]:  
                         is_distracted = True
                     
                     label = f"{distract_model.names[cls_id]} {conf:.2f}"
                     cv2.rectangle(frame, (xyxy[0], xyxy[1]), (xyxy[2], xyxy[3]), (0, 255, 0), 2)
                     cv2.putText(frame, label, (xyxy[0], xyxy[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
         
-
         frame = alert_system.process_frame(frame, is_drowsy, is_distracted)
 
         cv2.imshow("Driver Monitor System", frame)
