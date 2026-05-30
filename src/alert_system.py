@@ -18,6 +18,7 @@ class AlertSystem:
         self.is_alarming = False
         self.was_danger = False
         self.nearest_shelters = []
+        self.drowsy_count = 0
 
         try:
             self.current_lat = float(os.getenv("DEFAULT_LAT", "37.4979"))
@@ -70,6 +71,11 @@ class AlertSystem:
         else:
             self.danger_count = max(0, self.danger_count - 1)
 
+        if is_drowsy:
+            self.drowsy_count += 1
+        else:
+            self.drowsy_count = max(0, self.drowsy_count - 1)
+
         is_danger = self.danger_count > self.alarm
 
         if 5 < self.danger_count <= self.alarm:
@@ -89,7 +95,7 @@ class AlertSystem:
                 self.is_alarming = True
                 threading.Thread(target=self.play_sound, daemon=True).start()
 
-            if not self.was_danger and self.shelter_service:
+            if not self.was_danger and self.shelter_service and self.drowsy_count > self.alarm:
                 self.nearest_shelters = self.shelter_service.find_nearest(
                     self.current_lat, self.current_lng, limit=3
                 )
