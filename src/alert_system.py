@@ -99,6 +99,10 @@ class AlertSystem:
                 self.nearest_shelters = self.shelter_service.find_nearest(
                     self.current_lat, self.current_lng, limit=3
                 )
+                if self.nearest_shelters:
+                    print("[졸음쉼터 추천]")
+                    for i, s in enumerate(self.nearest_shelters, 1):
+                        print(f"  {i}. {s.get('name')}  {s.get('distance_km', 0):.1f}km  ({s.get('road_name')} {s.get('direction')})")
 
             frame = self._draw_shelter_info(frame)
 
