@@ -12,3 +12,6 @@ runs/
 .env
 
 .python-version
+
+# 졸음쉼터 로컬 캐시
+shelters_cache.json
