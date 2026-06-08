@@ -2,6 +2,7 @@ import os
 import cv2
 import threading
 import winsound
+import time
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 from dotenv import load_dotenv
@@ -20,6 +21,7 @@ class AlertSystem:
         self.was_danger = False
         self.nearest_shelters = []
         self.drowsy_count = 0
+        self.normal_start_time = None 
 
         try:
             self.current_lat = float(os.getenv("DEFAULT_LAT", "37.4979"))
@@ -71,13 +73,23 @@ class AlertSystem:
 
         if is_drowsy or is_distracted:
             self.danger_count += 1
+            self.normal_start_time = None
         else:
-            self.danger_count = max(0, self.danger_count - 1)
+            if self.normal_start_time is None:
+                self.normal_start_time = time.time()
+            
+            if time.time() - self.normal_start_time >= 1.0:
+                self.danger_count = 0
+            else:
+                self.danger_count = max(0, self.danger_count - 1)
 
         if is_drowsy:
             self.drowsy_count += 1
         else:
-            self.drowsy_count = max(0, self.drowsy_count - 1)
+            if self.normal_start_time is not None and (time.time() - self.normal_start_time >= 1.0):
+                self.drowsy_count = 0
+            else:
+                self.drowsy_count = max(0, self.drowsy_count - 1)
 
         is_danger = self.danger_count > self.alarm
         is_caution = 5 < self.danger_count <= self.alarm
